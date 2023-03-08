@@ -1,12 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
 // middleware
 app.use(express.static('public'));
 app.use(express.json());           // Code Explanation: https://youtu.be/uiKwHx2K1Fo?list=PL4cUxeGkcC9iqqESP8335DA5cRFp8loyp&t=288 
+app.use(cookieParser());
 
 // view engine
 app.set('view engine', 'ejs');
@@ -23,15 +25,3 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCr
 app.get('/', (req, res) => res.render('home'));
 app.get('/smoothies', (req, res) => res.render('smoothies'));
 app.use(authRoutes);
-
-// cookies
-app.get('/set-cookies', (req, res) => {
-
-  res.setHeader('Set-Cookie', 'newUser=true');
-  
-  res.send('you got the cookies!');
-
-  
-})
-
-// Video bookmark: https://www.youtube.com/watch?v=zW_tZR0Ir3Q&list=PL4cUxeGkcC9jsz4LDYc6kv3ymONOKxwBU&index=11

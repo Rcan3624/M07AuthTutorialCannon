@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 // handle errors
 const handleErrors = (err) => {
@@ -21,6 +22,13 @@ const handleErrors = (err) => {
     return errors;
 }
 
+const maxAge = 3 * 24 * 60 * 60;
+const createToken = (id) => {
+  return jwt.sign({ id }, 'net ninja secret', {
+    expiresIn: maxAge
+  })
+}
+
 module.exports.signup_get = (req, res) => {
     res.render('signup');
 }
@@ -31,18 +39,20 @@ module.exports.login_get = (req, res) => {
 
 // Code Explanation: https://youtu.be/mnJxyc0DGM8?list=PL4cUxeGkcC9iqqESP8335DA5cRFp8loyp&t=388
 module.exports.signup_post = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const user = await User.create({ email, password });
-      res.status(201).json(user);
-    }
-    catch(err) {
-      const errors = handleErrors(err);
-      res.status(400).json({ errors });
-    }
-   
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.create({ email, password });
+    const token = createToken(user._id);
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
+    res.status(201).json({ user: user._id });
   }
+  catch(err) {
+    const errors = handleErrors(err);
+    res.status(400).json({ errors });
+  }
+ 
+}
 
 //https://youtu.be/uiKwHx2K1Fo?list=PL4cUxeGkcC9iqqESP8335DA5cRFp8loyp&t=309
 module.exports.login_post = async (req, res) => {
